@@ -1,0 +1,11 @@
+[project]
+name = "tareas-cys-7123"
+version = "0.1.0"
+description = "Tareas de Criptografía y Seguridad - UNAM 2026-2, Grupo 7123, por Daniel Paredes"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "cryptography>=48.0.0",
+    "ruff>=0.15.12",
+    "sympy>=1.14.0",
+]
