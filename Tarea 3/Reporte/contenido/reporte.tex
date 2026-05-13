@@ -1,0 +1,128 @@
+\section*{Ejercicio 4: Una clave y un secreto en AES}
+
+La lógica del script \texttt{solution.py} es la siguiente: 
+
+\begin{itemize}
+	\item Cargamos los archivos \texttt{file.txt}, \texttt{hashes.txt} y \texttt{cipher.txt} y limpiamos su contenido 
+	(quitamos acentos, pasamos a minúsculas...) para trabajar únicamente con un alfabeto de 26 letras sin ruido.
+
+	\item Generamos los primeros 50 números primeros con \texttt{sympy} y los usamos como guía para armar cadenas de
+	50 letras de longitud. Para cada primo $p$ se toma una letra en una posición determinada del texto y, en algunas variantes, 
+	además le aplica un desplazamiento César dependiente de $p$-2.
+
+	\item A c/u de estas candidatas se le prueba con algunas combinaciones con la palabra base \texttt{kevinmitnick}, mezclando usando
+	Vigenére por suma/resta y una intercalación de caracteres. 
+
+	\item Para cada una de estas combinaciones se calcula su SHA-256 y se compara con los hashes dados en \texttt{hashes.txt}.
+	Cuando alguno coincide se derivan las claves necesarias para desencriptar \texttt{cipher.txt} con AES‑GCM (nonce de 12 bytes); 
+
+	\item Si la autenticación pasa, se imprime el mensaje en la pantalla.
+\end{itemize}
+
+El código completo del script se encuentra a continuación:
+	
+\input{contenido/solution.py.tex}
+
+Y el mensaje desencriptado es el siguiente:
+
+\begin{verbatim}
+Mitnick gained unauthorized access to a computer network in 1979, at 16, when a friend 
+gave him the telephone number for the Ark, the computer system that Digital Equipment Corporation 
+(DEC) used for developing its RSTS/E operating system software. He broke into DEC's computer 
+network and copied the company's software, a crime for which he was charged and convicted in 1988. 
+He was sentenced to 12 months in prison followed by three years of supervised release. Near the end 
+of his supervised release, Mitnick hacked into Pacific Bell voicemail computers. After a warrant was 
+issued for his arrest, Mitnick fled, becoming a fugitive for two-and-a-half years.
+\end{verbatim}
+
+\section*{Ejercicio 5: El gran secreto dentro de una imagen}
+
+\begin{tcolorbox}[title=Info. VM 1]
+OS: Kali GNU/Linux Rolling x86\_64
+Kernel version: 6.19.1+kali-amd64
+Núcleos: 2 x Intel Core i7-9750H
+RAM: 2GB
+IP: 192.168.1.230
+\end{tcolorbox}
+
+Para este ejercicio se utilizó la imágen \texttt{mao-shi.jpg} indicada en el repositorio de la tarea y
+se ocuparon los mismos comandos mencionados en el mismo. 
+
+Primero, tras la instalación de \texttt{steghide} y \texttt{jp2a}, se ejecutó el comando 
+\texttt{steghide extract -sf mao-shi.jpg}, obteniendo lo siguiente:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 5/one.png}
+    \caption{Obtención de archivos ocultos en mao-shi.jpg}
+    \label{fig:mao-shi}
+\end{figure}
+
+Luego, aunque el archivo \texttt{silent.sh} genera un archivo html con el que podemos continuar la búsqueda
+de la bandera escondida, se optó por simplemente hacer \texttt{cat silent.sh} para visualizar en pantalla 
+el contenido del archivo, encontrando al final del archivo la bandera FLAG\{s73g4n0graphy\_15\_hidd3n\}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 5/two.png}
+    \caption{Obtención de la bandera escondida en index.html}
+    \label{fig:bandera-estenografia}
+\end{figure}
+
+\section*{Ejercicio 6: Una gran tormenta se avecina}
+
+
+\section*{Ejercicio 7: ¡Hey! No mires más de lo necesario}
+
+\begin{tcolorbox}[title=Info. VM 2]
+OS: Debian GNU/Linux 13 (trixie)
+Kernel version: 6.12.86+deb13-amd64
+Núcleos: 2 x Intel Core i7-9750H
+RAM: 2GB
+IP: 192.168.1.231
+\end{tcolorbox}
+
+Se hacen las configuraciones mencionadas en la descripción de la tarea para la configuración de la VM Debian.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 7/telnet_config.png}
+    \caption{Configuración de telnet en la VM Debian}
+    \label{fig:configuracion-debian}
+\end{figure}
+
+Luego, ponemos el fitro indicado en Wireshark y ejecutamos \texttt{telnet 192.168.1.231}. Estos son los resultados:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 7/telnet_wireshark.png}
+    \caption{Captura de trafico telnet con Wireshark}
+    \label{fig:wireshark-telnet}
+\end{figure}
+
+Revisando uno de los paquetes capturados, vemos que el payload incluye el resultado de \texttt{uname -a}
+lo cual es correcto por lo que se ejecuta desde la terminal.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 7/tcp_stream.png}
+    \caption{Revisión del payload de un paquete telnet con Wireshark}
+    \label{fig:tcp-stream}
+\end{figure}
+
+Luego, haciendo la conexión por ssh desde el host a la VM Debian usando \texttt{ssh debian@192.168.1.231}
+y aplicando el filtro de tráfico ssh en Wireshark, se obtiene lo siguiente:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 7/ssh_wireshark.png}
+    \caption{Captura de tráfico ssh con Wireshark}
+    \label{fig:wireshark-ssh}
+\end{figure}
+
+Aunque en primera instancia no se capturan paquetes de esta conexión, esto es de hecho el resultado esperado
+ya que el tráfico ssh está cifrado, por lo que no se puede obtener información útil de este tráfico. 
+
+Esto concuerda con las diferencias de seguridad entre \texttt{telnet}, que transmite la información en 
+texto plano, y \texttt{ssh}, que cifra la información transmitida.
