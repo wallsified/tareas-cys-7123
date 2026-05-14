@@ -72,6 +72,42 @@ el contenido del archivo, encontrando al final del archivo la bandera FLAG\{s73g
 
 \section*{Ejercicio 6: Una gran tormenta se avecina}
 
+Nuevamente en la VM de Kali se ejecutan los comandos de instalación y activación de \texttt{apache2, vsftpd, ssh} y 
+\texttt{wireshark}, y se configuran los servicios de apache2 y vsftpd para que escuchen en el puerto 8080. Para el caso
+de \texttt{hping3} como se instaló en un host MacOS se instaló primero \texttt{macports} y se instaló la herramienta
+posteriormente. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../../Ejercicio 6/services.png}
+    \caption{Servicios apache2, vsftpd y ssh en la VM de Kali activos}
+    \label{fig:servicios-apache-vsftpd-ssh}
+\end{figure}
+
+Luego, hacemos la simulación del ataque DDos con \texttt{hping3} desde el host MacOS a la VM de Kali, obteniendo lo siguiente:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 6/hping.png}
+    \caption{Simulación de ataque DDoS con hping3}
+    \label{fig:hping3-ddos}
+\end{figure}
+
+Usando el comando modificado para tener fuentes aleatorias, se obtiene lo siguiente:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 6/hping_rand.png}
+    \caption{Simulación de ataque DDoS con hping3 y fuentes aleatorias}
+    \label{fig:hping3-ddos-random}
+\end{figure}
+
+Como vemos comparando ambas imágenes, el tráfico generado por el ataque DDoS con fuentes aleatorias 
+es mucho más difícil de identificar y filtrar, ya que no se puede distinguir fácilmente entre el tráfico 
+legítimo y el tráfico malicioso. Esto hace que la defensa contra este tipo de ataques sea más complicada, 
+ya que los sistemas de detección de intrusiones y los firewalls pueden tener dificultades para identificar 
+patrones de tráfico anómalos, a comparación con un ataque DDoS tradicional donde el tráfico proviene de una 
+fuente o un conjunto limitado de fuentes y que son más fáciles de identificar y bloquear.
 
 \section*{Ejercicio 7: ¡Hey! No mires más de lo necesario}
 
