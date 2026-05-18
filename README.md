@@ -15,5 +15,6 @@ uv sync
 Posteriormente, para ejecutar el programa se hace lo siguiente:
 
 ```bash
-uv run numeroDelEjercicio.py
+# Por ejemplo, para el Ejercicio 4 de la Tarea 3
+uv run solucion.py
 ```
